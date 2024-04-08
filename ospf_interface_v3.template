@@ -1,0 +1,48 @@
+##template properties
+name =ospf_interface_v3;
+description = ;
+tags = ;
+userDefined = true;
+supportedPlatforms = N9K;
+templateType = POLICY;
+templateSubType = DEVICE;
+contentType = TEMPLATE_CLI;
+implements = ;
+dependencies = ;
+published = false;
+imports = ;
+##
+##template variables
+
+@(DisplayName="OSPF Interface", Description="Enable OSFP on this interface")
+interface INTF_NAME;
+
+@(DisplayName="OSPF Area", Description="OSPF Area")
+integer AREA_ID;
+
+@(DisplayName="OSPF Process Tag", Description="OSPF routing process tag")
+string OSPF_TAG {
+  minLength = 1;
+  maxLength = 20;
+};
+
+@(DisplayName="OSPF Interface Type", Description="OSPF Interface Type")
+enum OSPF_INT_TYPE {
+  validValues=point-to-point,broadcast;
+  defaultValue=point-to-point;
+};
+
+@(DisplayName="Interface MTU", Description="Interface MTU")
+enum INT_MTU {
+  validValues=1500,9216;
+  defaultValue=9216;
+};
+
+##
+##template content
+
+interface $$INTF_NAME$$
+  mtu $$INT_MTU$$
+  ip router ospf $$OSPF_TAG$$ area $$AREA_ID$$
+  ip ospf network $$OSPF_INT_TYPE$$
+##

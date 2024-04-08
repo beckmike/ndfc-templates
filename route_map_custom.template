@@ -1,0 +1,95 @@
+##template properties
+name =route_map_custom;
+description = ;
+tags = ;
+userDefined = true;
+supportedPlatforms = N9K;
+templateType = POLICY;
+templateSubType = DEVICE;
+contentType = TEMPLATE_CLI;
+implements = ;
+dependencies = ;
+published = false;
+imports = ;
+##
+##template variables
+
+@(DisplayName="Route Map Name", Description="Name of route map with max. 63 characters, example route_map_test")
+string ROUTE_MAP_NAME {
+    maxLength = 63;
+};
+
+@(DisplayName="Route Map Action", Description="Route map permit or deny operation")
+enum ROUTE_MAP_ACTION {
+    validValues=permit,deny;
+    defaultValue=permit;
+};
+
+@(IsMandatory=false, DisplayName="IP Version", Description="IP version ip or ipv6")
+enum IP_VERSION {
+    validValues=ip,ipv6;
+    defaultValue=ip;
+};
+
+@(DisplayName="Route Map Sequence Number", Description="Route map match sequence number, example 10")
+integer SEQ_NUM {
+    min = 0;
+    max = 65535;
+    defaultValue=10;
+};
+
+@(IsMandatory=false, DisplayName="ACL/Prefix-List Name", Description="Name of ACL or Prefix-List with max. 63 characters, example acl_test")
+string ACL_NAME {
+    maxLength = 63;
+};
+
+@(IsMandatory=false, DisplayName="Match Route Using Prefix-List", Description="True if using Prefix-List to match address of route, False if using ACL")
+boolean MATCH_PREFIX_LIST {
+    defaultValue=false;
+};
+
+@(IsMandatory=false, DisplayName="Route-Type Entry #1", Description="First Entry for Route-Type")
+enum RT_1 {
+    validValues=external,internal,type-1,type-2;
+};
+
+@(IsMandatory=false, DisplayName="Route-Type Entry #2", Description="Second Entry for Route-Type")
+enum RT_2 {
+    validValues=external,internal,type-1,type-2;
+};
+
+@(IsMandatory=false, DisplayName="Route-Type Entry #3", Description="Third Entry for Route-Type")
+enum RT_3 {
+    validValues=external,internal,type-1,type-2;
+};
+
+@(IsMandatory=false, DisplayName="Route-Type Entry #4", Description="Fourth Entry for Route-Type")
+enum RT_4 {
+    validValues=external,internal,type-1,type-2;
+};
+##
+##template content
+
+route-map $$ROUTE_MAP_NAME$$ $$ROUTE_MAP_ACTION$$ $$SEQ_NUM$$
+if ($$MATCH_PREFIX_LIST$$ == "" || $$MATCH_PREFIX_LIST$$ == "false") {
+ if ($$ACL_NAME$$ != "") {
+  match $$IP_VERSION$$ address $$ACL_NAME$$
+ }
+}
+else {
+  match $$IP_VERSION$$ address prefix-list $$ACL_NAME$$
+}
+
+if ($$RT_1$$ != "") {
+  match route-type $$RT_1$$
+}
+if ($$RT_2$$ != "") {
+  match route-type $$RT_2$$
+}
+if ($$RT_3$$ != "") {
+  match route-type $$RT_3$$
+}
+if ($$RT_4$$ != "") {
+  match route-type $$RT_4$$
+}
+##

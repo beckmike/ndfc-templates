@@ -1,0 +1,24 @@
+##template properties
+name =ptp_gm_device_type;
+description = Set PTP Device Type to ordinary Grandmaster;
+tags = ;
+userDefined = true;
+supportedPlatforms = All;
+templateType = POLICY;
+templateSubType = DEVICE;
+contentType = TEMPLATE_CLI;
+implements = ;
+dependencies = ;
+published = false;
+imports = ;
+##
+##template variables
+
+# Set Device Type to ordinary Grandmaster
+
+##template content
+
+ptp device-type ordinary-clock-grandmaster
+ptp priority1 1
+ptp priority2 1
+##

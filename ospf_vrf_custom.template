@@ -1,0 +1,93 @@
+##template properties
+name =ospf_vrf_custom;
+description = Policy to setup VRF-Lite on Edge Router using OSPF as peering protocol;
+tags = ;
+userDefined = true;
+supportedPlatforms = All;
+templateType = POLICY;
+templateSubType = DEVICE;
+contentType = TEMPLATE_CLI;
+implements = ;
+dependencies = ;
+published = false;
+imports = ;
+##
+##template variables
+#    Copyright (c) 2023 by Cisco Systems, Inc.
+#    All rights reserved.
+
+@(IsMandatory=true, DisplayName="VRF Name")
+string vrfName;
+
+@(IsMandatory=false, DisplayName="OSPF Router ID")
+ipV4Address ROUTER_ID;
+
+@(IsMandatory=false, DisplayName="OSPF Process Tag", Description="OSPF Routing Process Tag")
+string OSPF_PROCESS_TAG {
+  minLength = 1;
+  maxLength = 20;
+};
+
+@(IsMandatory="OSPF_PROCESS_TAG!=null", DisplayName="OSPF Area Id", Description="OSPF Area Id in IP address format")
+string OSPF_AREA_ID {
+  minLength = 1;
+  maxLength = 15;
+};
+
+@(IsMandatory=false, DisplayName="OSPF Distance", Description="OSPF Administrative Distance")
+integer OSPF_DISTANCE {
+  min = 1;
+  max = 255;
+};
+
+@(IsMandatory=false, DisplayName="OSPFv3 Process Tag", Description="OSPFv3 Routing Process Tag")
+string OSPFv3_PROCESS_TAG {
+  minLength = 1;
+  maxLength = 20;
+};
+
+@(IsMandatory=false, DisplayName="Enable OSPF Authentication")
+boolean OSPF_AUTH_ENABLE {
+defaultValue=false;
+};
+
+##
+##template content
+
+if ($$OSPF_PROCESS_TAG$$ != "") {
+router ospf $$OSPF_PROCESS_TAG$$
+if ($$vrfName$$ != "default") {
+  vrf $$vrfName$$
+    router-id $$ROUTER_ID$$
+  if ($$OSPF_DISTANCE$$ != "") {
+    distance $$OSPF_DISTANCE$$
+  }  
+  if ($$OSPF_AUTH_ENABLE$$ == "true") {
+    area $$OSPF_AREA_ID$$ authentication message-digest
+  }
+}
+else {
+  router-id $$ROUTER_ID$$
+  if ($$OSPF_DISTANCE$$ != "") {
+    distance $$OSPF_DISTANCE$$
+  }
+  if ($$OSPF_AUTH_ENABLE$$ == "true") {
+  area $$OSPF_AREA_ID$$ authentication message-digest
+  }
+}
+}
+if ($$OSPFv3_PROCESS_TAG$$ != "") {
+router ospfv3 $$OSPFv3_PROCESS_TAG$$
+  router-id $$ROUTER_ID$$
+if ($$OSPF_DISTANCE$$ != "") {
+  distace $$OSPF_DISTANCE$$
+  }
+if ($$vrfName$$ != "default") {
+  vrf $$vrfName$$
+  if ($$OSPF_DISTANCE$$ != "") {
+    distace $$OSPF_DISTANCE$$
+  }
+}
+}
+
+##

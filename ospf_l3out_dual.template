@@ -1,0 +1,91 @@
+##template properties
+name =ospf_l3out_dual;
+description = Policy to setup VRF-Lite on Edge Router using OSPF as peering protocol;
+tags = ;
+userDefined = true;
+supportedPlatforms = All;
+templateType = POLICY;
+templateSubType = DEVICE;
+contentType = TEMPLATE_CLI;
+implements = ;
+dependencies = ;
+published = false;
+imports = ;
+##
+##template variables
+
+@(IsMandatory=true, DisplayName="VRF Name")
+string VRF;
+
+@(IsMandatory=true, DisplayName="OSPF Router ID")
+ipV4Address ROUTER_ID;
+
+@(IsMandatory=true, DisplayName="OSPF Area Id", Description="OSPF Area Id in IP address format")
+string OSPF_AREA_ID {
+  minLength = 1;
+  maxLength = 15;
+};
+
+@(DisplayName="OSPF Interface", Description="Enable OSFP on this interface")
+interface INTF_NAME;
+
+@(DisplayName="OSPF Interface Type", Description="OSPF Interface Type")
+enum OSPF_INT_TYPE {
+  validValues=point-to-point,broadcast;
+  defaultValue=point-to-point;
+};
+
+@(DisplayName="Interface MTU", Description="Interface MTU")
+enum INT_MTU {
+  validValues=1500,9216;
+  defaultValue=9216;
+};
+
+@(IsMandatory=false, DisplayName="Enable Redistribution", Description="Enable mutual redistribution")
+boolean REDIS {
+    defaultValue=false;
+};
+
+@(IsShow="REDIS==true")
+integer BGP_AS;
+
+##
+##template content
+
+
+if ($$REDIS$$ == "true") {
+  route-map rm-bgp-internal-to-ospf-$$VRF$$ permit 10
+    match route-type internal 
+    set tag 666
+
+  route-map rm-ospf-$$VRF$$-to-bgp deny 10
+    match tag 666
+  route-map rm-ospf-$$VRF$$-to-bgp permit 20
+
+  route-map rm-ospf-$$VRF$$-table-map permit 10
+    match tag 666
+    set distance 222
+
+  router ospf $$VRF$$
+    vrf $$VRF$$
+      router-id $$ROUTER_ID$$
+      redistribute bgp $$BGP_AS$$ route-map rm-bgp-internal-to-ospf-$$VRF$$
+      table-map rm-ospf-$$VRF$$-table-map
+      
+  router bgp $$BGP_AS$$
+    vrf $$VRF$$
+      address-family ipv4 unicast
+        redistribute ospf $$VRF$$ route-map rm-ospf-$$VRF$$-to-bgp
+}
+else {
+  router ospf $$VRF$$
+    vrf $$VRF$$
+      router-id $$ROUTER_ID$$
+}
+
+interface $$INTF_NAME$$
+  mtu $$INT_MTU$$
+  ip router ospf $$VRF$$ area $$OSPF_AREA_ID$$
+  ip ospf network $$OSPF_INT_TYPE$$
+
+##
